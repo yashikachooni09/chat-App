@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Chatting App</h1>
+  <div id="chat-container">
+    <div id="mess"></div>
+    <input type="text" id="msg" placeholder="Enter message...">
+    <button id="send">Send</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const sendBtn = document.getElementById("send");
+    const messageContainer = document.getElementById("mess");
+    const inputMsg = document.getElementById("msg");
+
+    // Generate a random ID for this user session
+    const userId = Math.floor(Math.random() * 1000000);
+
+    socket.on("message", ({ msg, id }) => {
+      const div = document.createElement("div");
+      div.classList.add("msg");
+      div.classList.add(id === userId ? "own" : "other");
+      div.innerText = msg;
+      messageContainer.appendChild(div);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
+
+    sendBtn.addEventListener("click", () => {
+      const msg = inputMsg.value.trim();
+      if (msg !== "") {
+        socket.emit("userMessage", { msg, id: userId });
+        inputMsg.value = "";
+      }
+    });
+
+    inputMsg.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+  </script>
+</body>
+</html>
